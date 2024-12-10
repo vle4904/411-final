@@ -24,9 +24,9 @@ This project is a web-based application designed to enhance user music experienc
     - Offer options for generating new music discovery routes
 ### Routes 
 1. **Login Route**
-   ** Route Name and Path ** : Login /login
-   ** Request Type ** : GET
-   ** Purpose ** : Redirects the user to Spotify's authentication page. This allows the application permision to access the user's Spotify data.
-   ** Request Format ** GET parameters: None. 
-   ** Response Format ** : HTTP Redirect to Spotify's authorization endpoint
-   ** Example ** : Request in the form of cURL command, Associated HTTP redirect to Spotify's login page
+   - Route Name and Path : Login /login
+   - Request Type  : GET
+   -  Purpose  : Redirects the user to Spotify's authentication page. This allows the application permision to access the user's Spotify data.
+   -  Request Format  GET parameters: None. 
+   -  Response Format  : HTTP Redirect to Spotify's authorization endpoint
+   -  Example  : Request in the form of cURL command, Associated HTTP redirect to Spotify's login page
