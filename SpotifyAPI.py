@@ -155,3 +155,7 @@ def get_current_track():
     }
 
     return current_track_info
+
+#Running website app
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', debug=True)
