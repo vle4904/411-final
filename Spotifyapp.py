@@ -8,6 +8,8 @@ import urllib.parse
 import json
 # from flask_cors import CORS
 
+#Continue: Need to add db connection stuff
+
 from models import studysession_model
 
 '''
@@ -84,7 +86,7 @@ def db_check() -> Response:
 ####################################################
 
 @app.route('/login', methods=['GET'])
-def login():
+def login() -> Response:
     """
     Login endpoint to redirect to Spotify's authorization page.
 
@@ -104,7 +106,7 @@ def login():
     return make_response(jsonify({'auth_url': auth_url}), 200)
 
 @app.route('/callback', methods=['GET'])
-def callback():
+def callback() -> Response:
     """
     Callback route for Spotify API.
 
@@ -136,7 +138,7 @@ def callback():
     return make_response(jsonify({'status': 'User Authenticated Successfully'}), 200)
 
 @app.route('/refresh-token', methods=['GET'])
-def refresh_token():
+def refresh_token() -> Response:
     """
     Refresh the Spotify access token when it expires.
 
@@ -172,19 +174,22 @@ def refresh_token():
 #
 ##########################################################
 
-@app.route('/studysession', methods=['GET'])
-def studysession():
+#Modeled after battle() function
+@app.route('/start-study-session', methods=['GET'])
+def studysession() -> Response:
     """
-    Start a study session and record currently playing tracks.
+    Route to start a study session and record currently playing tracks (without adding into database)
 
     Returns:
         JSON response indicating success or error of starting a study session
 
     Raises:
-        400 error for unexpected errors in conducting a study session 
+        500 error for unexpected errors in conducting a study session 
     """
     try:
-        #studysession lasts for 5 minutes
+        app.logger.info('Starting a study session')
+
+        # Start a study session that lasts for 5 minutes
         end_studysession = datetime.now().timestamp() + 5 * 60
         studysession_list = []
 
@@ -197,17 +202,11 @@ def studysession():
 
             time.sleep(5)
 
-        # Convert studysession_list into JSON string
-        studysession_json = json.dumps(studysession_list)
-
-        # Store the JSON string in the database
-        study_session_id = studysession_model.create_study_session(studysession_json)
-
-        app.logger.info("Study session recorded")
-        return make_response(jsonify({'status': 'Study session successfully conducted', 'study_session_id': study_session_id}), 200)
+        return make_response(jsonify({'status': 'Study session successfully conducted', 'studysession_list': studysession_list}), 200)
     except Exception as e:
-        return make_response(jsonify({'error': str(e)}), 400)
+        return make_response(jsonify({'error': str(e)}), 500)
 
+#Modeled after add_meal() function
 @app.route('/api/add-study-session', methods=['POST'])
 def add_study_session() -> Response:
     """
@@ -243,7 +242,8 @@ def add_study_session() -> Response:
     except Exception as e:
         app.logger.error("Failed to add study session data: %s", str(e))
         return make_response(jsonify({'error': str(e)}), 500)
-    
+
+#Modeled after clear_catalog() function
 @app.route('/api/clear-study-sessions', methods=['DELETE'])
 def clear_catalog() -> Response:
     """
@@ -260,6 +260,7 @@ def clear_catalog() -> Response:
         app.logger.error(f"Error clearing study sessions: {e}")
         return make_response(jsonify({'error': str(e)}), 500)
 
+#Modeled after delete_meal() function
 @app.route('/api/delete-study-session/<int:session_id>', methods=['DELETE'])
 def delete_study_session(study_session_id: int) -> Response:
     """
@@ -280,6 +281,7 @@ def delete_study_session(study_session_id: int) -> Response:
         app.logger.error(f"Error deleting study session: {e}")
         return make_response(jsonify({'error': str(e)}), 500)
 
+#Modeled after get_meal_by_id() function
 @app.route('/api/get-study-session-by-id/<int:study_session_id>', methods=['GET'])
 def get_study_session_by_id(study_session_id: int) -> Response:
     """
