@@ -234,10 +234,10 @@ def add_study_session() -> Response:
         studysession_json = json.dumps(studysession_list)
 
         # Store the JSON string in the database
-        study_session_id = studysession_model.create_study_session(studysession_json)
+        studysession_model.create_study_session(studysession_json)
 
         app.logger.info('Study session data successfully added to the database')
-        return make_response(jsonify({'status': 'study session data added successfully', 'study_session_id': study_session_id}), 201)
+        return make_response(jsonify({'status': 'study session data added successfully'}), 201)
 
     except Exception as e:
         app.logger.error("Failed to add study session data: %s", str(e))
