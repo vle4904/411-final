@@ -64,7 +64,7 @@ This project is a web-based application designed to enhance user music experienc
   - Redirects to `/` if the refresh is successful.
   - Redirects to `/login` if the refresh token is missing.
     
-  5. **Start a Study Session**
+5. **Start a Study Session**
 - Route and Path: `/studysession`  
 - Request Type: `GET`  
 - Purpose: Initiates a "study session" and tracks the user's currently playing songs for the duration of the session. Saves the session data into a CSV file.  
