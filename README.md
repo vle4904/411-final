@@ -30,6 +30,7 @@ This project is a web-based application designed to enhance user music experienc
    -  Request Format  GET parameters: None. 
    -  Response Format  : HTTP Redirect to Spotify's authorization endpoint
    -  Example  : Request in the form of cURL command, Associated HTTP redirect to Spotify's login page
+     
 2. **Index**
 - Route Name and Path : `/`  
 - Request Type : `GET`  
@@ -39,6 +40,7 @@ This project is a web-based application designed to enhance user music experienc
   - "Login with Spotify"
   - "Start Study Session"
   - "Get Recommendations"
+    
  3. **Authorization Callback**
 - Route Name and Path: `/callback`  
 - Request Type: `GET`  
@@ -49,6 +51,7 @@ This project is a web-based application designed to enhance user music experienc
 - Response Format
   - Redirects to `/` on successful login.
   - Returns an error message if login fails.
+    
   4. **Refresh Access Token**
 - Route Name and Path: `/refresh-token`  
 - Request Type: `GET`  
@@ -60,6 +63,7 @@ This project is a web-based application designed to enhance user music experienc
 - Response Format:
   - Redirects to `/` if the refresh is successful.
   - Redirects to `/login` if the refresh token is missing.
+    
   5. **Start a Study Session**
 - Route and Path: `/studysession`  
 - Request Type: `GET`  
