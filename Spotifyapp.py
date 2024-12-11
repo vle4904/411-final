@@ -1,12 +1,26 @@
 from dotenv import load_dotenv
-from flask import Flask, jsonify, make_response, Response, redirect, request, session
+from flask import Flask, jsonify, make_response, Response, request, session
 from requests import post, get
 from datetime import datetime, timedelta
 import os
 import time
-import pandas as pd
 import urllib.parse
+import json
 # from flask_cors import CORS
+
+from models import studysession_model
+
+'''
+Notes:
+    Functions: 
+        Start Study Sessions
+        Record playing songs in a Study Session (including song data = {id, name, artist, link})
+        Add/Remove Study Sessions in SQLite DB
+    Common Variables:
+        studysession_list: List of dictionaries (where dictionaries = played songs in a study session)
+        studysession_json: JSON string of studysession_list
+        study_session_id: int
+'''
 
 # Load environment variables from .env file
 load_dotenv()
@@ -183,20 +197,24 @@ def studysession():
 
             time.sleep(5)
 
-        df = pd.DataFrame(studysession_list)
-        df.to_csv(f"studysession_{int(datetime.now().timestamp())}.csv", index=False)
+        # Convert studysession_list into JSON string
+        studysession_json = json.dumps(studysession_list)
+
+        # Store the JSON string in the database
+        study_session_id = studysession_model.create_study_session(studysession_json)
+
         app.logger.info("Study session recorded")
-        return make_response(jsonify({'status': 'Study session successfully conducted'}), 200)
+        return make_response(jsonify({'status': 'Study session successfully conducted', 'study_session_id': study_session_id}), 200)
     except Exception as e:
         return make_response(jsonify({'error': str(e)}), 400)
 
 @app.route('/api/add-study-session', methods=['POST'])
 def add_study_session() -> Response:
     """
-    Route to add a csv study session into the SQLite database.
+    Route to add a JSON string study session into the SQLite database.
 
     Expected JSON Input:
-        - csv_file_path (str): Path to the CSV file containing a study session data.
+        - studysession_list (list): Study session list of dictionaries (where the dictionaries = recorded songs of a study session).
 
     Returns:
         JSON response indicating the success of the addition.
@@ -204,33 +222,23 @@ def add_study_session() -> Response:
         400 error if input validation fails.
         500 error if there is an issue adding the data to the database.
     """
-    app.logger.info('Adding study session data from CSV to database')
+    app.logger.info('Adding study session to database')
     try:
         data = request.get_json()
+        studysession_list = data.get('studysession_list')
 
-        csv_file_path = data.get('csv_file_path')
+        # Validate the session data
+        if not isinstance(studysession_list, list):
+            return make_response(jsonify({'error': 'Invalid input, session_data must be a list of dictionaries'}), 400)
 
-        # Check if csv is exist/valid
-        if not csv_file_path or not os.path.isfile(csv_file_path):
-            return make_response(jsonify({'error': 'Invalid input, CSV file path does not exist or invalid'}), 400)
+        # Convert the session data to JSON string
+        studysession_json = json.dumps(studysession_list)
 
-        df = pd.read_csv(csv_file_path)
-
-        # Check if csv is not empty
-        if df.empty:
-            return make_response(jsonify({'error': 'CSV file is empty'}), 400)
-
-        # Validate that the DataFrame contains the necessary columns
-        required_columns = ['id', 'name', 'artist', 'link', 'timestamp']
-        if not all(column in df.columns for column in required_columns):
-            return make_response(jsonify({'error': f'CSV file must contain the following columns: {required_columns}'}), 400)
-
-        # Call the studysession_model function to add the studysession csv to the database
-        app.logger.info('Adding meal study session data')
-        studysession_model.create_study_session(df)
+        # Store the JSON string in the database
+        study_session_id = studysession_model.create_study_session(studysession_json)
 
         app.logger.info('Study session data successfully added to the database')
-        return make_response(jsonify({'status': 'study session data added successfully'}), 201)
+        return make_response(jsonify({'status': 'study session data added successfully', 'study_session_id': study_session_id}), 201)
 
     except Exception as e:
         app.logger.error("Failed to add study session data: %s", str(e))
@@ -242,7 +250,7 @@ def clear_catalog() -> Response:
     Route to clear all study sessions (recreate the table).
 
     Returns:
-        JSON response indicating success of the operation or error message.
+        JSON response indicating success or error of clearing all study sessions.
     """
     try:
         app.logger.info("Clearing all study sessions")
@@ -261,7 +269,7 @@ def delete_study_session(study_session_id: int) -> Response:
         - study_session_id (int): The ID of the study session to delete.
 
     Returns:
-        JSON response indicating success of the operation or error message.
+        JSON response indicating success or error in deleting study session.
     """
     try:
         app.logger.info(f"Deleting study session by ID: {study_session_id}")
@@ -281,7 +289,7 @@ def get_study_session_by_id(study_session_id: int) -> Response:
         - study_session_id (int): The ID of the study session.
 
     Returns:
-        JSON response with the study session details or error message.
+        JSON response indicating success or error in getting study session.
     """
     try:
         app.logger.info(f"Retrieving study session by ID: {study_session_id}")
