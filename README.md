@@ -52,7 +52,7 @@ This project is a web-based application designed to enhance user music experienc
   - Redirects to `/` on successful login.
   - Returns an error message if login fails.
     
-  4. **Refresh Access Token**
+4. **Refresh Access Token**
 - Route Name and Path: `/refresh-token`  
 - Request Type: `GET`  
 - Purpose: Refreshes the Spotify access token when the current one has expired.  
